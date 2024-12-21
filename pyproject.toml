@@ -1,0 +1,13 @@
+[project]
+name = "vite-fastapi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "black>=24.10.0",
+    "fastapi-inertia>=1.0.3",
+    "httpx>=0.28.1",
+    "itsdangerous>=2.2.0",
+    "uvicorn>=0.34.0",
+]
