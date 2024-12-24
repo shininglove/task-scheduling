@@ -28,4 +28,4 @@ app.mount("/static", StaticFiles(directory=views_dir), name=f"{views_dir}")
 
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency) -> InertiaResponse:
-    return await inertia.render("Index", {"name": "Connor"})
+    return await inertia.render("Index", {"name": "connor"})
