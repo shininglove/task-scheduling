@@ -6,7 +6,9 @@
 
 {#snippet navbar()}
     <header class="bg-slate-900 px-4 py-7">
-        <div class="font-sans text-5xl font-bold text-slate-50">Bon's Task Tracking</div>
+        <div class="font-sans text-5xl font-bold text-slate-50">
+            Bon's Task Tracking
+        </div>
     </header>
 {/snippet}
 

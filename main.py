@@ -1,31 +1,10 @@
-from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.staticfiles import StaticFiles
-from inertia import (
-    InertiaResponse,
-    InertiaVersionConflictException,
-    inertia_version_conflict_exception_handler,
-    inertia_request_validation_exception_handler,
-)
-from config import InertiaDependency, views_dir
-
-app = FastAPI()
-
-app.add_middleware(SessionMiddleware, secret_key="message")
-
-app.add_exception_handler(
-    InertiaVersionConflictException,
-    inertia_version_conflict_exception_handler,  # type: ignore[arg-type]
-)
-app.add_exception_handler(
-    RequestValidationError,
-    inertia_request_validation_exception_handler,  # type: ignore[arg-type]
-)
-
-app.mount("/static", StaticFiles(directory=views_dir), name=f"{views_dir}")
+from inertia import InertiaResponse
+from config.views import InertiaDependency
+from config.app import app
+from services.db import hungry
 
 
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency) -> InertiaResponse:
+    print("hello")
     return await inertia.render("Index", {"name": "connor"})
