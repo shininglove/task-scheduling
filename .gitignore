@@ -12,3 +12,4 @@ wheels/
 .envrc
 .python-version
 node_modules/
+*.db*
