@@ -49,7 +49,10 @@ def upgrade_status(status: Status) -> Status:
 
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaResponse:
-    saved_tasks = session.exec(select(TaskItem)).all()
+    stale_limit = datetime.now() - timedelta(days=5)
+    saved_tasks = session.exec(
+        select(TaskItem).where(TaskItem.date_created > stale_limit)
+    ).all()
     tasks = [
         {
             "status": (
