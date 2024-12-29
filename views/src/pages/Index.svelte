@@ -119,11 +119,11 @@
             class={`w-fit rounded-3xl ${metadata[status].color} p-3 text-base lg:text-xl font-semibold`}
             >{metadata[status].title}</button
           >
-          <span class="text-2xl">
-            <Link href={`/task/${slug}`}>
-              {name}
-            </Link>
-          </span>
+          <Link href={`/task/${slug}`}>
+            <span class="text-2xl font-bold">
+              {name.substring(0, 25) + (name.length > 25 ? "..." : "")}
+            </span>
+          </Link>
           <button
             onclick={() => $deleteTask.mutate({ slug })}
             class="ml-auto cursor-pointer text-2xl text-slate-950 lg:text-4xl"
