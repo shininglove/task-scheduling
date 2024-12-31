@@ -7,7 +7,10 @@
     "moduleResolution": "bundler",
     "strict": true,
     "noEmit": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "path": {
+      "$lib/*" : ["src/lib/*.ts"]
+    },
   },
   "include": ["vite.config.ts"]
 }

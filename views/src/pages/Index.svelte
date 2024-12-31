@@ -2,6 +2,7 @@
   import { createMutation } from "@tanstack/svelte-query";
   import { router, Link } from "@inertiajs/svelte";
   import ky from "ky";
+  import { metadata } from "../lib/helpers";
   type Data = {};
   const {
     data,
@@ -15,38 +16,30 @@
   } = $props();
   let createdTask: string = $state("");
   let taskDescription: string = $state("");
-  let metadata = {
-    completed: { title: "Completed", color: "bg-green-500" },
-    progressing: { title: "In-Progress", color: "bg-yellow-600" },
-    queued: { title: "In-Queue", color: "bg-red-500" },
-    stale: { title: "Stale", color: "bg-purple-500" },
-  };
   const query = createMutation({
     mutationKey: ["task-create"],
-    mutationFn: ({ name, message }: { name: string; message: string }) =>
-      ky.post<Data>("/create-task", { json: { name, message } }).json(),
+    mutationFn: (createInfo: { name: string; message: string }) =>
+      ky.post<Data>("/create-task", { json: { ...createInfo } }).json(),
     onSuccess: () => {
       router.reload();
     },
   });
   const changeStatus = createMutation({
     mutationKey: ["change-status"],
-    mutationFn: ({ status, slug }: { status: string; slug: string }) =>
-      ky.patch<Data>("/change-status", { json: { status, slug } }).json(),
+    mutationFn: (changeInfo: { status: string; slug: string }) =>
+      ky.patch<Data>("/change-status", { json: { ...changeInfo } }).json(),
     onSuccess: () => {
       router.reload();
     },
   });
   const deleteTask = createMutation({
     mutationKey: ["task-delete"],
-    mutationFn: ({ slug }: { slug: string }) =>
-      ky.delete<Data>("/delete-task", { json: { slug } }).json(),
+    mutationFn: (deleteInfo: { slug: string }) =>
+      ky.delete<Data>("/delete-task", { json: { ...deleteInfo } }).json(),
     onSuccess: () => {
       router.reload();
     },
   });
-
-  const { format } = new Intl.DateTimeFormat("en-US", { dateStyle: "short" });
 </script>
 
 {#snippet trash()}
@@ -132,7 +125,8 @@
           </button>
         </div>
         <span class="mt-auto p-2 text-xl"
-          >Last updated: {format(new Date(date))}</span
+          >Last updated: <span class="font-semibold text-red-500">{date}</span
+          ></span
         >
       </div>
     {/each}

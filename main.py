@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import select
 from nanoid import generate
 from icecream import ic
+import arrow
 from config.database import SessionDep
 from config.views import InertiaDependency
 from config.app import app
@@ -49,20 +50,16 @@ def upgrade_status(status: Status) -> Status:
 
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaResponse:
-    stale_limit = datetime.now() - timedelta(days=5)
+    stale_limit = datetime.now() - timedelta(days=7)
     saved_tasks = session.exec(
         select(TaskItem).where(TaskItem.date_created > stale_limit)
     ).all()
     tasks = [
         {
-            "status": (
-                "stale"
-                if t.date_created < datetime.now() - timedelta(days=5)
-                else t.status
-            ),
+            "status": ("stale" if t.date_created < stale_limit else t.status),
             "name": t.title,
             "slug": t.slug,
-            "date": f"{t.date_created}",
+            "date": arrow.get(t.date_created).humanize(),
         }
         for t in saved_tasks
     ]
@@ -75,11 +72,17 @@ async def task_page(
     inertia: InertiaDependency,
     session: SessionDep,
 ) -> InertiaResponse:
+    # TODO: set timezone in settings?
     task = session.exec(select(TaskItem).where(TaskItem.slug == slug)).one_or_none()
     if task is None:
         raise HTTPException(status_code=404, detail="Task hasn't been created")
     descriptions = [
-        {"content": d.message, "date": f"{d.date_created}"} for d in task.descriptions
+        {
+            "id": f"{d.id or ""}",
+            "content": d.message,
+            "date": arrow.get(d.date_created).humanize(),
+        }
+        for d in task.descriptions
     ]
     metadata = {
         "slug": task.slug,
@@ -87,12 +90,12 @@ async def task_page(
         "title": task.title,
         "status": (
             "stale"
-            if task.date_created < datetime.now() - timedelta(days=5)
+            if task.date_created < datetime.now() - timedelta(days=7)
             else task.status
         ),
     }
     return await inertia.render(
-        "TaskPage", {"descriptions": descriptions, "task": metadata}
+        "TaskPage", {"descriptions": descriptions[::-1], "task": metadata}
     )
 
 
@@ -129,4 +132,13 @@ async def delete_task(task: TaskSlug, session: SessionDep):
 async def create_description(task: AddDescription, session: SessionDep):
     description = TaskDescription(message=task.content, task_id=task.slug)
     session.add(description)
+    session.commit()
+
+
+@app.put("/update-description", response_model=None)
+async def update_description(description: AddDescription, session: SessionDep):
+    # TODO: add slug to description potentially?
+    found_des = session.get_one(TaskDescription, int(description.slug))
+    found_des.message = description.content
+    session.add(found_des)
     session.commit()

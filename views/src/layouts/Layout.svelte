@@ -16,7 +16,7 @@
 {/snippet}
 
 <QueryClientProvider client={queryClient}>
-    <main class="h-screen w-screen overflow-hidden">
+    <main class="h-screen w-screen overflow-x-hidden">
         {@render navbar()}
         {@render children()}
     </main>

@@ -1,20 +1,17 @@
 Next Steps:
 
 Cleanup:
-- reverse order of tasks in task page
-- look into human-readable dates
+- settings for config?
 
 Deleteable:
 - descriptions
-- tasks from task page
+- ~tasks from task page~
 - soft deletes?
 
 Update:
-- status from task page
 - add updated_at column
 
 Editable:
-- description from task page
 - (potentially) name from task page
 
 Send Function:
@@ -25,4 +22,5 @@ Showing all tasks:
 - filter stale from main page, but allow somewhere else
 - search bar at the top and links to task page
 - add option to remove tasks from mailing list
-- pagination perhaps?
+- pagination perhaps? (query params)
+- set how many days since (7,14,21) [query params]

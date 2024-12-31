@@ -1,5 +1,5 @@
 from typing import Literal
-from datetime import datetime
+from datetime import timezone, datetime
 from sqlmodel import Field, Relationship, SQLModel, String
 
 
@@ -10,7 +10,7 @@ class TaskItem(SQLModel, table=True):
     status: Literal["completed", "progressing", "queued", "stale"] = Field(
         default="queued", sa_type=String
     )
-    date_created: datetime = Field(default=datetime.now())
+    date_created: datetime = Field(default=datetime.now(timezone.utc))
     descriptions: list["TaskDescription"] = Relationship(
         back_populates="task", cascade_delete=True
     )
@@ -22,5 +22,5 @@ class TaskDescription(SQLModel, table=True):
         default=None, foreign_key="taskitem.slug", ondelete="CASCADE"
     )
     message: str
-    date_created: datetime = Field(default=datetime.now())
+    date_created: datetime = Field(default=datetime.now(timezone.utc))
     task: TaskItem | None = Relationship(back_populates="descriptions")
