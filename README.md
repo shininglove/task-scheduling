@@ -1,7 +1,7 @@
 Next Steps:
 
 Cleanup:
-- settings for config?
+- try out cuid2
 
 Deleteable:
 - descriptions
@@ -12,13 +12,13 @@ Update:
 - add updated_at column
 
 Editable:
-- (potentially) name from task page
+- ~(potentially) name from task page~
 
 Send Function:
 - sending out email function
     - create email example in form of page using Maizzle
 
-Showing all tasks:
+>>Showing all tasks:
 - filter stale from main page, but allow somewhere else
 - search bar at the top and links to task page
 - add option to remove tasks from mailing list

@@ -23,6 +23,8 @@
   let content: string = $state("");
   let currentlyEditing = $state(-1);
   let currentDescription = $state("");
+  let editingTitle = $state(false);
+  let newTitle = $state(task.title);
   const query = createMutation({
     mutationKey: ["description-create"],
     mutationFn: (createDescription: { slug: string; content: string }) =>
@@ -48,6 +50,15 @@
     onSuccess: () => {
       router.reload();
       currentlyEditing = -1;
+    },
+  });
+  const titleChange = createMutation({
+    mutationKey: ["change-title"],
+    mutationFn: (changeTitle: { title: string; slug: string }) =>
+      ky.patch<Data>("/change-title", { json: { ...changeTitle } }).json(),
+    onSuccess: () => {
+      router.reload();
+      editingTitle = false;
     },
   });
 </script>
@@ -96,7 +107,34 @@
       class={`w-fit rounded-3xl ${metadata[task.status].color} p-3 text-base lg:text-xl font-semibold`}
       >{metadata[task.status].title}</button
     >
-    <span>{task.title}</span>
+    {#if editingTitle}
+      <textarea
+        class="h-20 w-3/5 md:w-11/12 rounded p-5 text-slate-700 text-3xl lg:w-4/5 resize-none bg-slate-100"
+        name="title"
+        id="create-title"
+        bind:value={newTitle}
+        onkeydowncapture={(e) => {
+          if (e.key.toLowerCase() === "enter") {
+            e.preventDefault();
+            $titleChange.mutate({ slug: task.slug, title: newTitle });
+          }
+        }}
+      ></textarea>
+      <button
+        onclick={() => {
+          $titleChange.mutate({ slug: task.slug, title: newTitle });
+        }}>{@render checkmark()}</button
+      >
+    {:else}
+      <span>
+        {task.title}
+      </span>
+      <button
+        onclick={() => {
+          editingTitle = true;
+        }}>{@render edit()}</button
+      >
+    {/if}
   </section>
   <section>
     <form

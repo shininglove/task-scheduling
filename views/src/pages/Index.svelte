@@ -72,20 +72,20 @@
         <label class="text-2xl font-semibold" for="new-task">New Task</label>
         <input
           placeholder="Write task name here"
-          class="h-16 w-3/5 rounded px-4 text-slate-700 lg:w-2/5"
+          class="h-16 w-3/5 rounded px-4 text-3xl text-slate-700 lg:w-2/5"
           name="task-name"
           type="text"
           bind:value={createdTask}
           required={true}
         />
-        <input
+        <textarea
+          class="h-48 w-3/5 resize-none rounded p-4 text-3xl text-slate-700 md:w-11/12 lg:w-4/5"
+          name="description"
+          id="create-description"
           placeholder="Add task description here..."
-          class="h-20 rounded px-4 text-slate-700"
-          name="new-task"
-          type="text"
           bind:value={taskDescription}
           required={true}
-        />
+        ></textarea>
         <button
           onclick={() => {
             $query.mutate({ name: createdTask, message: taskDescription });

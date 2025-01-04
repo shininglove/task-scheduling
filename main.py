@@ -10,6 +10,7 @@ import arrow
 from config.database import SessionDep
 from config.views import InertiaDependency
 from config.app import app
+from config.settings import DAYS_STALE
 from services.db import TaskDescription, TaskItem
 
 
@@ -32,6 +33,11 @@ class TaskCreate(BaseModel):
     message: str = Field(min_length=1)
 
 
+class TaskTitle(BaseModel):
+    title: str = Field(min_length=1)
+    slug: str = Field(min_length=1)
+
+
 type Status = Literal["queued", "progressing", "completed", "stale"]
 
 
@@ -50,13 +56,13 @@ def upgrade_status(status: Status) -> Status:
 
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaResponse:
-    stale_limit = datetime.now() - timedelta(days=7)
+    stale_limit = datetime.now() - timedelta(days=DAYS_STALE)
     saved_tasks = session.exec(
         select(TaskItem).where(TaskItem.date_created > stale_limit)
     ).all()
     tasks = [
         {
-            "status": ("stale" if t.date_created < stale_limit else t.status),
+            "status": t.status,
             "name": t.title,
             "slug": t.slug,
             "date": arrow.get(t.date_created).humanize(),
@@ -72,7 +78,6 @@ async def task_page(
     inertia: InertiaDependency,
     session: SessionDep,
 ) -> InertiaResponse:
-    # TODO: set timezone in settings?
     task = session.exec(select(TaskItem).where(TaskItem.slug == slug)).one_or_none()
     if task is None:
         raise HTTPException(status_code=404, detail="Task hasn't been created")
@@ -88,11 +93,7 @@ async def task_page(
         "slug": task.slug,
         "date": f"{task.date_created}",
         "title": task.title,
-        "status": (
-            "stale"
-            if task.date_created < datetime.now() - timedelta(days=7)
-            else task.status
-        ),
+        "status": task.status,
     }
     return await inertia.render(
         "TaskPage", {"descriptions": descriptions[::-1], "task": metadata}
@@ -141,4 +142,13 @@ async def update_description(description: AddDescription, session: SessionDep):
     found_des = session.get_one(TaskDescription, int(description.slug))
     found_des.message = description.content
     session.add(found_des)
+    session.commit()
+
+
+@app.patch("/change-title", response_model=None)
+async def change_task_title(task: TaskTitle, session: SessionDep):
+    found_task = session.exec(select(TaskItem).where(TaskItem.slug == task.slug)).one()
+    ic(found_task)
+    found_task.title = task.title
+    session.add(found_task)
     session.commit()
