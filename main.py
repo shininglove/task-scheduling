@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Literal
-from fastapi import HTTPException, Path
+from fastapi import HTTPException, Path, Request
 from inertia import InertiaResponse
 from pydantic import BaseModel, Field
-from sqlmodel import select
+from sqlmodel import func, select
 from nanoid import generate
 from icecream import ic
 import arrow
@@ -101,8 +101,22 @@ async def task_page(
 
 
 @app.get("/task-list", response_model=None)
-async def task_list(inertia: InertiaDependency, session: SessionDep):
-    tasks = session.exec(select(TaskItem)).all()
+async def task_list(
+    inertia: InertiaDependency,
+    session: SessionDep,
+    req: Request,
+    days: int = 0,
+    pagenum: int = 0,
+    numperpage: int = 3,
+):
+    total_count = session.exec(select(func.count()).select_from(TaskItem)).one()
+    if days == 0:
+        stmt = select(TaskItem)
+    else:
+        stmt = select(TaskItem).where(
+            TaskItem.date_created > datetime.now() - timedelta(days=days)
+        )
+    tasks = session.exec(stmt.offset(pagenum * numperpage).limit(numperpage)).all()
     rows = [
         {
             "title": t.title,
@@ -113,10 +127,25 @@ async def task_list(inertia: InertiaDependency, session: SessionDep):
                 else t.status
             ),
             "date": arrow.get(t.date_created).humanize(),
+            "details": [
+                {
+                    "message": d.message[:50] + ("" if len(d.message) < 50 else "..."),
+                    "date": arrow.get(d.date_created).humanize(),
+                }
+                for d in t.descriptions
+            ],
         }
         for t in tasks
     ]
-    return await inertia.render("TaskList", {"rows": rows})
+    return await inertia.render(
+        "TaskList",
+        {
+            "rows": rows,
+            "url": req.url.path,
+            "total": total_count // numperpage
+            + (1 if total_count % numperpage != 0 else 0),
+        },
+    )
 
 
 @app.post("/create-task", response_model=None)

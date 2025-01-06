@@ -1,18 +1,28 @@
 <script lang="ts">
   import { Link } from "@inertiajs/svelte";
   import { metadata } from "../lib/helpers";
+  import { SvelteURL } from "svelte/reactivity";
   const {
     rows,
+    url,
+    total,
   }: {
     rows: {
       status: "completed" | "progressing" | "queued" | "stale";
       title: string;
       date: string;
       slug: string;
+      details: { message: string; date: string }[];
     }[];
+    url: string;
+    total: number;
   } = $props();
   let searchText = $state("");
   let timer = $state(-1);
+  let currentTask = $state("");
+  const location = new SvelteURL(window.location.href);
+  const currentDays = location.searchParams.get("days") ?? "";
+  // add the days param if present
 </script>
 
 {#snippet magnifying()}
@@ -59,11 +69,13 @@
         class="h-12 text-slate-100 p-2 text-center font-extrabold text-lg bg-slate-800"
         name=""
         id=""
+        onchange={(e) =>
+          (window.location.href = `${url}?days=${e.currentTarget.value}`)}
       >
         <option value="0">Select days</option>
-        <option value="7">7 days</option>
-        <option value="14">14 days</option>
-        <option value="21">21 days</option>
+        {#each ["7", "14", "21"] as num}
+          <option selected={num === currentDays} value={num}>{num} days</option>
+        {/each}
       </select>
     </form>
   </section>
@@ -84,21 +96,36 @@
               >{metadata[row.status].title}</span
             >
             <div class="ml-auto flex items-center gap-x-10 pr-5">
-              <span>+</span> <span>-</span>
+              <button onclick={() => (currentTask = row.slug)}>+</button>
+              <span>-</span>
             </div>
           </div>
           <div class="pl-1 font-semibold text-red-500">
             {row.date}
           </div>
         </section>
+        {#if currentTask === row.slug}
+          <section class="bg-slate-800 w-11/12">
+            {#each row.details as detail}
+              <div class="p-2 flex flex-row">
+                <p>{detail.message} ({detail.date})</p>
+                <span class="cursor-pointer ml-auto px-2">X</span>
+              </div>
+            {/each}
+          </section>
+        {/if}
       {/if}
     {/each}
     <section class="flex flex-row gap-x-1 p-5 text-center">
-      {#each { length: rows.length }, num}
-        <span
+      {#each { length: total }, num}
+        <Link
           class="h-7 w-10 cursor-pointer bg-slate-200 font-bold text-red-400"
-          >{num + 1}</span
+          href={`${url}?pagenum=${num}`}
         >
+          <span>
+            {num + 1}
+          </span>
+        </Link>
       {/each}
     </section>
   </section>

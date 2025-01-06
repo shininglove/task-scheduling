@@ -34,9 +34,9 @@
 {/snippet}
 
 <QueryClientProvider client={queryClient}>
-    <main class="h-screen w-screen overflow-x-hidden">
+    <main class="h-screen w-screen overflow-x-hidden bg-slate-700">
         {@render navbar()}
-        <section id="content" class="h-full bg-slate-700 text-slate-50">
+        <section id="content" class="h-full text-slate-50">
             {@render children()}
         </section>
     </main>
