@@ -60,7 +60,7 @@
 <svelte:head>
   <title>Task Tracking</title>
 </svelte:head>
-<section id="content" class="h-full bg-slate-700 text-slate-50">
+<section id="content">
   <section id="create-task" class="w-2/3 p-5 text-2xl">
     <form
       onsubmit={(e) => {

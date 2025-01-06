@@ -26,7 +26,9 @@
             class="font-sans text-5xl font-bold text-slate-50 flex items-center"
         >
             <Link href={`/`}>Bon's Task Tracking</Link>
-            <span class="ml-auto text-4xl">{@render settingsIcon()}</span>
+            <span class="ml-auto text-4xl pr-4">
+                <Link href={`/task-list`}>{@render settingsIcon()}</Link>
+            </span>
         </div>
     </header>
 {/snippet}
@@ -34,6 +36,8 @@
 <QueryClientProvider client={queryClient}>
     <main class="h-screen w-screen overflow-x-hidden">
         {@render navbar()}
-        {@render children()}
+        <section id="content" class="h-full bg-slate-700 text-slate-50">
+            {@render children()}
+        </section>
     </main>
 </QueryClientProvider>

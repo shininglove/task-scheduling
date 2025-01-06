@@ -94,10 +94,7 @@
 <svelte:head>
   <title>Task Tracking | Task Page</title>
 </svelte:head>
-<section
-  id="content"
-  class="flex h-full flex-col gap-y-8 bg-slate-700 px-4 py-5 text-slate-50"
->
+<section class="flex flex-col gap-y-8 px-4 py-5">
   <section
     class="flex items-center rounded bg-slate-100 p-5 text-4xl font-extrabold text-slate-900 gap-x-5"
   >

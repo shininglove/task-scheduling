@@ -19,21 +19,21 @@ class AddDescription(BaseModel):
     content: str = Field(min_length=1)
 
 
-class TaskSlug(BaseModel):
+class SlugTask(BaseModel):
     slug: str = Field(min_length=1)
 
 
-class TaskStatus(BaseModel):
+class StatusTask(BaseModel):
     status: str = Field(min_length=1)
     slug: str = Field(min_length=1)
 
 
-class TaskCreate(BaseModel):
+class CreateTask(BaseModel):
     name: str = Field(min_length=1)
     message: str = Field(min_length=1)
 
 
-class TaskTitle(BaseModel):
+class TitleTask(BaseModel):
     title: str = Field(min_length=1)
     slug: str = Field(min_length=1)
 
@@ -100,8 +100,27 @@ async def task_page(
     )
 
 
+@app.get("/task-list", response_model=None)
+async def task_list(inertia: InertiaDependency, session: SessionDep):
+    tasks = session.exec(select(TaskItem)).all()
+    rows = [
+        {
+            "title": t.title,
+            "slug": t.slug,
+            "status": (
+                "stale"
+                if t.date_created < datetime.now() - timedelta(days=DAYS_STALE)
+                else t.status
+            ),
+            "date": arrow.get(t.date_created).humanize(),
+        }
+        for t in tasks
+    ]
+    return await inertia.render("TaskList", {"rows": rows})
+
+
 @app.post("/create-task", response_model=None)
-async def create_task(tasks: TaskCreate, session: SessionDep):
+async def create_task(tasks: CreateTask, session: SessionDep):
     ic(tasks)
     task = TaskItem(title=tasks.name, slug=generate())
     description = TaskDescription(message=tasks.message, task_id=task.slug)
@@ -111,7 +130,7 @@ async def create_task(tasks: TaskCreate, session: SessionDep):
 
 
 @app.patch("/change-status", response_model=None)
-async def change_status(task: TaskStatus, session: SessionDep):
+async def change_status(task: StatusTask, session: SessionDep):
     found_status = session.exec(
         select(TaskItem).where(TaskItem.slug == task.slug)
     ).one()
@@ -122,7 +141,7 @@ async def change_status(task: TaskStatus, session: SessionDep):
 
 
 @app.delete("/delete-task", response_model=None)
-async def delete_task(task: TaskSlug, session: SessionDep):
+async def delete_task(task: SlugTask, session: SessionDep):
     found_task = session.exec(select(TaskItem).where(TaskItem.slug == task.slug)).one()
     ic(found_task)
     session.delete(found_task)
@@ -146,7 +165,7 @@ async def update_description(description: AddDescription, session: SessionDep):
 
 
 @app.patch("/change-title", response_model=None)
-async def change_task_title(task: TaskTitle, session: SessionDep):
+async def change_task_title(task: TitleTask, session: SessionDep):
     found_task = session.exec(select(TaskItem).where(TaskItem.slug == task.slug)).one()
     ic(found_task)
     found_task.title = task.title
