@@ -8,7 +8,7 @@
     data,
   }: {
     data: {
-      status: "completed" | "progressing" | "queued" | "stale";
+      status: "completed" | "progressing" | "queued" | "blocked";
       name: string;
       slug: string;
       date: string;
@@ -109,7 +109,7 @@
         <div class="flex flex-row items-center gap-x-5">
           <button
             onclick={() => $changeStatus.mutate({ slug, status })}
-            class={`w-fit rounded-3xl ${metadata[status].color} p-3 text-base lg:text-xl font-semibold`}
+            class={`w-fit rounded-3xl ${metadata[status].color} p-3 text-base text-slate-50 lg:text-xl font-semibold`}
             >{metadata[status].title}</button
           >
           <Link href={`/task/${slug}`}>

@@ -1,0 +1,26 @@
+---
+bodyClass: bg-slate-200
+preheader: Report email template
+---
+
+<x-main class="pt-10 font-sans">
+  <table class="w-1/2 bg-slate-50 px-10 pb-10 pt-3" align="center">
+    <tr class="">
+      <td>
+        <h1 class="text-4xl font-bold text-slate-950">Hi, </h1>
+        <div class="text-xl text-slate-950">
+          <p class="text-2xl">Here are the tasks that were this week.</p>
+          %tasks%
+        </div>
+        <table>
+          <x-divider />
+          <tr>
+            <td class="text-xl">
+              <span class="font-semibold text-red-500">%blockers%</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</x-main>

@@ -4,8 +4,13 @@ from fastapi.templating import Jinja2Templates
 from typing import Annotated
 from inertia import InertiaConfig, inertia_dependency_factory, Inertia
 
-templates = Jinja2Templates(directory=Path("templates"))
+TEMPLATES_DIR = Path("templates")
 
+MAIL_DIR = TEMPLATES_DIR / "mail" / "emails"
+
+MAIL_TEMPLATE = MAIL_DIR / "report.html"
+
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 manifest_json = Path("views") / "src"
 
 inertia_config = InertiaConfig(

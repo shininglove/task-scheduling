@@ -9,7 +9,7 @@
     descriptions,
   }: {
     task: {
-      status: "completed" | "progressing" | "queued" | "stale";
+      status: "completed" | "progressing" | "queued" | "blocked";
       title: string;
       slug: string;
       date: string;

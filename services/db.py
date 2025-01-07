@@ -7,7 +7,7 @@ class TaskItem(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     slug: str = Field(index=True)
     title: str
-    status: Literal["completed", "progressing", "queued", "stale"] = Field(
+    status: Literal["completed", "progressing", "queued", "blocked"] = Field(
         default="queued", sa_type=String
     )
     date_created: datetime = Field(default=datetime.now(timezone.utc))
