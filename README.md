@@ -27,8 +27,8 @@ Send Function:
 - ~set how many days since (7,14,21) [query params]~
 
 Features:
-- Add a blocked state
+- ~Add a blocked state~
 
 Testing:
 - Adding faker seed script
-- migrations script for these db updates
+- ~migrations script for these db updates~

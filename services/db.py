@@ -11,6 +11,9 @@ class TaskItem(SQLModel, table=True):
         default="queued", sa_type=String
     )
     date_created: datetime = Field(default=datetime.now(timezone.utc))
+    updated_at: datetime = Field(default=datetime.now(timezone.utc))
+    deleted_at: datetime | None = Field(default=None, nullable=True)
+    mailable: bool = Field(default=True)
     descriptions: list["TaskDescription"] = Relationship(
         back_populates="task", cascade_delete=True
     )
@@ -23,4 +26,7 @@ class TaskDescription(SQLModel, table=True):
     )
     message: str
     date_created: datetime = Field(default=datetime.now(timezone.utc))
+    updated_at: datetime = Field(default=datetime.now(timezone.utc))
+    deleted_at: datetime | None = Field(default=None, nullable=True)
+    mailable: bool = Field(default=True)
     task: TaskItem | None = Relationship(back_populates="descriptions")
