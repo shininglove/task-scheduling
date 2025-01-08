@@ -102,7 +102,7 @@
   </section>
   <section class="px-6">
     <select
-      class="h-10 w-60 text-center text-xl bg-slate-900 text-slate-100 font-bold"
+      class="h-12 w-56 bg-slate-900 text-center text-xl font-bold text-slate-100"
       bind:value={statusToShow}
       name=""
       id=""

@@ -96,7 +96,7 @@
 </svelte:head>
 <section class="flex flex-col gap-y-8 px-4 py-5">
   <section
-    class="flex items-center rounded bg-slate-100 p-5 text-4xl font-extrabold text-slate-900 gap-x-5"
+    class="flex items-center gap-x-5 rounded bg-slate-100 p-5 text-4xl font-extrabold text-slate-900"
   >
     <button
       onclick={() =>
@@ -106,7 +106,7 @@
     >
     {#if editingTitle}
       <textarea
-        class="h-20 w-3/5 md:w-11/12 rounded p-5 text-slate-700 text-3xl lg:w-4/5 resize-none bg-slate-100"
+        class="h-20 w-3/5 resize-none rounded bg-slate-100 p-5 text-3xl text-slate-700 md:w-11/12 lg:w-4/5"
         name="title"
         id="create-title"
         bind:value={newTitle}
@@ -135,11 +135,11 @@
   </section>
   <section>
     <form
-      class="flex flex-col justify-start items-start gap-y-5"
+      class="flex flex-col items-start justify-start gap-y-5"
       onsubmit={(e) => e.preventDefault()}
     >
       <textarea
-        class="h-48 w-3/5 md:w-11/12 rounded p-4 text-slate-700 text-3xl lg:w-4/5 resize-none"
+        class="h-48 w-3/5 resize-none rounded p-4 text-3xl text-slate-700 md:w-11/12 lg:w-4/5"
         name="description"
         id="create-description"
         placeholder="Add a description to this task..."
@@ -150,7 +150,7 @@
           $query.mutate({ slug: task.slug, content });
           content = "";
         }}
-        class="border border-slate-400 p-5 rounded text-slate-900 bg-slate-50 font-extrabold text-3xl"
+        class="rounded border border-slate-400 bg-slate-50 p-5 text-3xl font-extrabold text-slate-900"
       >
         Create
       </button>
@@ -161,10 +161,10 @@
       class="flex flex-col rounded-md border border-slate-50 bg-slate-950 p-3"
     >
       <div
-        class="text-4xl font-light md:text-3xl flex flex-row items-center gap-x-1"
+        class="flex flex-row items-center gap-x-1 text-4xl font-light md:text-3xl"
       >
         {#if currentlyEditing == idx}
-          <textarea class="bg-black w-full" bind:value={currentDescription}
+          <textarea class="w-full bg-black" bind:value={currentDescription}
           ></textarea>
           <button
             onclick={() =>
@@ -183,7 +183,7 @@
           >
         {/if}
       </div>
-      <div class="ml-auto text-red-500 font-bold">
+      <div class="ml-auto font-bold text-red-500">
         {item.date}
       </div>
     </section>

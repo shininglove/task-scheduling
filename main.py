@@ -13,6 +13,7 @@ from config.views import InertiaDependency, MAIL_TEMPLATE
 from config.app import app
 from config.settings import DAYS_STALE
 from services.db import TaskDescription, TaskItem
+from services.report import mail_report
 
 
 class AddDescription(BaseModel):
@@ -95,6 +96,11 @@ async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaRespo
     return await inertia.render("Index", {"data": tasks})
 
 
+@app.get("/settings", response_model=None)
+async def settings(inertia: InertiaDependency) -> InertiaResponse:
+    return await inertia.render("Settings", {})
+
+
 @app.get("/mail-preview", response_model=None)
 async def mail_preview(session: SessionDep):
     week_old = datetime.now() - timedelta(days=7)
@@ -113,8 +119,8 @@ async def mail_preview(session: SessionDep):
     )
     with open(MAIL_TEMPLATE) as tem:
         html = tem.read()
-        html = html.replace("%tasks%", task_html)
-        html = html.replace("%blockers%", blocked_html)
+        html = html.replace("$tasks", task_html)
+        html = html.replace("$blockers", blocked_html)
     return HTMLResponse(content=html)
 
 
@@ -193,6 +199,11 @@ async def task_list(
             "total": total_count // perpage + (1 if total_count % perpage != 0 else 0),
         },
     )
+
+
+@app.post("/send-report", response_model=None)
+async def send_report(session: SessionDep):
+    mail_report()
 
 
 @app.post("/create-task", response_model=None)

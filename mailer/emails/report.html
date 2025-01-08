@@ -10,13 +10,13 @@ preheader: Report email template
         <h1 class="text-4xl font-bold text-slate-950">Hi, </h1>
         <div class="text-xl text-slate-950">
           <p class="text-2xl">Here are the tasks that were this week.</p>
-          %tasks%
+          $tasks
         </div>
         <table>
           <x-divider />
           <tr>
             <td class="text-xl">
-              <span class="font-semibold text-red-500">%blockers%</span>
+              <span class="font-semibold text-red-500">$blockers</span>
             </td>
           </tr>
         </table>

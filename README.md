@@ -16,7 +16,7 @@ Editable:
 - ~(potentially) name from task page~
 
 Send Function:
-- sending out email function
+- ~sending out email function~
     - ~create email example in form of page using Maizzle~
 
 >>Showing all tasks:

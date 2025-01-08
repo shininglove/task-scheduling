@@ -13,3 +13,4 @@ wheels/
 .python-version
 node_modules/
 *.db*
+.env
