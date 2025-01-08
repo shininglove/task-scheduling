@@ -28,7 +28,10 @@ Send Function:
 
 Features:
 - ~Add a blocked state~
-- Filter homepage for queued and working
+- ~Filter homepage for queued and working~
 
 Testing:
 - ~migrations script for these db updates~
+v2 plans:
+- tooltip with date
+- delete prompt with confirmation

@@ -42,7 +42,6 @@
     },
   });
   let statusToShow: string = $state("queued,progressing");
-  $inspect(statusToShow);
 </script>
 
 {#snippet trash()}
@@ -108,6 +107,7 @@
       name=""
       id=""
     >
+      <option value={""}>Show all</option>
       <option selected={true} value={"queued,progressing"}
         >Queued or Working</option
       >
@@ -120,7 +120,7 @@
     class="grid grid-cols-1 gap-y-5 p-5 text-3xl md:grid-cols-2 lg:grid-cols-3"
   >
     {#each data as { name, status, date, slug }}
-      {#if statusToShow.includes(status)}
+      {#if statusToShow.includes(status) || statusToShow === ""}
         <div
           class="min-w-96 flex w-11/12 flex-col gap-y-5 border-4 border-slate-950 bg-slate-200 p-4 text-slate-950"
         >
@@ -144,8 +144,8 @@
           </div>
           <span class="mt-auto p-2 text-xl"
             >Last updated: <span class="font-semibold text-red-500">{date}</span
-            ></span
-          >
+            >
+          </span>
         </div>
       {/if}
     {/each}
