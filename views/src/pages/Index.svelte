@@ -4,11 +4,12 @@
   import ky from "ky";
   import { metadata } from "../lib/helpers";
   type Data = {};
+  type StatusOptions = "completed" | "progressing" | "queued" | "blocked";
   const {
     data,
   }: {
     data: {
-      status: "completed" | "progressing" | "queued" | "blocked";
+      status: StatusOptions;
       name: string;
       slug: string;
       date: string;
@@ -40,6 +41,8 @@
       router.reload();
     },
   });
+  let statusToShow: string = $state("queued,progressing");
+  $inspect(statusToShow);
 </script>
 
 {#snippet trash()}
@@ -98,37 +101,53 @@
       </div>
     </form>
   </section>
+  <section class="px-6">
+    <select
+      class="h-10 w-60 text-center text-xl bg-slate-900 text-slate-100 font-bold"
+      bind:value={statusToShow}
+      name=""
+      id=""
+    >
+      <option selected={true} value={"queued,progressing"}
+        >Queued or Working</option
+      >
+      <option value={"completed"}>Completed</option>
+      <option value={"blocked"}>Blocked</option>
+    </select>
+  </section>
   <section
     id="current-tasks"
     class="grid grid-cols-1 gap-y-5 p-5 text-3xl md:grid-cols-2 lg:grid-cols-3"
   >
     {#each data as { name, status, date, slug }}
-      <div
-        class="min-w-96 flex w-11/12 flex-col gap-y-5 border-4 border-slate-950 bg-slate-200 p-4 text-slate-950"
-      >
-        <div class="flex flex-row items-center gap-x-5">
-          <button
-            onclick={() => $changeStatus.mutate({ slug, status })}
-            class={`w-fit rounded-3xl ${metadata[status].color} p-3 text-base text-slate-50 lg:text-xl font-semibold`}
-            >{metadata[status].title}</button
-          >
-          <Link href={`/task/${slug}`}>
-            <span class="text-2xl font-bold">
-              {name.substring(0, 25) + (name.length > 25 ? "..." : "")}
-            </span>
-          </Link>
-          <button
-            onclick={() => $deleteTask.mutate({ slug })}
-            class="ml-auto cursor-pointer text-2xl text-slate-950 lg:text-4xl"
-          >
-            {@render trash()}
-          </button>
-        </div>
-        <span class="mt-auto p-2 text-xl"
-          >Last updated: <span class="font-semibold text-red-500">{date}</span
-          ></span
+      {#if statusToShow.includes(status)}
+        <div
+          class="min-w-96 flex w-11/12 flex-col gap-y-5 border-4 border-slate-950 bg-slate-200 p-4 text-slate-950"
         >
-      </div>
+          <div class="flex flex-row items-center gap-x-5">
+            <button
+              onclick={() => $changeStatus.mutate({ slug, status })}
+              class={`w-fit rounded-3xl ${metadata[status].color} p-3 text-base text-slate-50 lg:text-xl font-semibold`}
+              >{metadata[status].title}</button
+            >
+            <Link href={`/task/${slug}`}>
+              <span class="text-2xl font-bold">
+                {name.substring(0, 25) + (name.length > 25 ? "..." : "")}
+              </span>
+            </Link>
+            <button
+              onclick={() => $deleteTask.mutate({ slug })}
+              class="ml-auto cursor-pointer text-2xl text-slate-950 lg:text-4xl"
+            >
+              {@render trash()}
+            </button>
+          </div>
+          <span class="mt-auto p-2 text-xl"
+            >Last updated: <span class="font-semibold text-red-500">{date}</span
+            ></span
+          >
+        </div>
+      {/if}
     {/each}
   </section>
 </section>

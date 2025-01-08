@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, Literal, Sequence
 from fastapi import HTTPException, Path, Request
 from fastapi.responses import HTMLResponse
@@ -61,11 +61,27 @@ def upgrade_status(status: Status) -> Status:
     return statuses[idx]
 
 
+def process_tasks(
+    items: Sequence[TaskItem], time_limit: datetime, placeholder: str = ""
+) -> str:
+    html = ""
+    for item in items:
+        if item.mailable:
+            header = f"<span><b>{item.title}</b> [{item.status.title()}]</span>"
+            details = []
+            for d in item.descriptions:
+                if d.updated_at > time_limit and d.mailable:
+                    details.append(f"<li>{d.message}</li>")
+            points = f"<ul>{''.join(details)}</ul>"
+            html += f"{header}{points}"
+    return placeholder if len(items) == 0 else html
+
+
 @app.get("/", response_model=None)
 async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaResponse:
     stale_limit = datetime.now() - timedelta(days=DAYS_STALE)
     saved_tasks = session.exec(
-        select(TaskItem).where(TaskItem.date_created > stale_limit)
+        select(TaskItem).where(TaskItem.updated_at > stale_limit)
     ).all()
     tasks = [
         {
@@ -79,26 +95,11 @@ async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaRespo
     return await inertia.render("Index", {"data": tasks})
 
 
-def process_tasks(
-    items: Sequence[TaskItem], time_limit: datetime, placeholder: str = ""
-) -> str:
-    html = ""
-    for item in items:
-        header = f"<span><b>{item.title}</b> [{item.status.title()}]</span>"
-        details = []
-        for d in item.descriptions:
-            if d.date_created > time_limit:
-                details.append(f"<li>{d.message}</li>")
-        points = f"<ul>{''.join(details)}</ul>"
-        html += f"{header}{points}"
-    return placeholder if len(items) == 0 else html
-
-
 @app.get("/mail-preview", response_model=None)
 async def mail_preview(session: SessionDep):
     week_old = datetime.now() - timedelta(days=7)
     sendable_tasks = session.exec(
-        select(TaskItem).where(TaskItem.date_created > week_old)
+        select(TaskItem).where(TaskItem.updated_at > week_old)
     ).all()
     task_html = process_tasks(
         [t for t in sendable_tasks if t.status != "blocked"],
@@ -157,9 +158,9 @@ async def task_list(
     stmt = select(TaskItem)
     count_stmt = select(func.count()).select_from(TaskItem)
     if days != 0:
-        stmt = stmt.where(TaskItem.date_created > datetime.now() - timedelta(days=days))
+        stmt = stmt.where(TaskItem.updated_at > datetime.now() - timedelta(days=days))
         count_stmt = count_stmt.where(
-            TaskItem.date_created > datetime.now() - timedelta(days=days)
+            TaskItem.updated_at > datetime.now() - timedelta(days=days)
         )
     total_count = session.exec(count_stmt).one()
     tasks = session.exec(stmt.offset((page - 1) * perpage).limit(perpage)).all()
@@ -169,6 +170,7 @@ async def task_list(
             "title": t.title,
             "slug": t.slug,
             "status": t.status,
+            "mailable": t.mailable,
             "date": arrow.get(t.date_created).humanize(),
             "details": [
                 {
@@ -176,6 +178,7 @@ async def task_list(
                     + ("" if len(d.message) < message_size else "..."),
                     "date": arrow.get(d.date_created).humanize(),
                     "slug": f"{d.id}",
+                    "mailable": d.mailable,
                 }
                 for d in t.descriptions
             ],
@@ -209,6 +212,7 @@ async def change_status(task: StatusTask, session: SessionDep):
     ).one()
     ic(found_status)
     found_status.status = upgrade_status(found_status.status)
+    found_status.updated_at = datetime.now(timezone.utc)
     session.add(found_status)
     session.commit()
 
@@ -221,10 +225,24 @@ async def delete_task(task: SlugTask, session: SessionDep):
     session.commit()
 
 
+@app.delete("/delete-description", response_model=None)
+async def delete_description(task: SlugTask, session: SessionDep):
+    # TODO: probably need to have slug for description
+    found_descr = session.exec(
+        select(TaskDescription).where(TaskDescription.id == task.slug)
+    ).one()
+    ic(found_descr)
+    session.delete(found_descr)
+    session.commit()
+
+
 @app.post("/create-description", response_model=None)
 async def create_description(task: AddDescription, session: SessionDep):
     description = TaskDescription(message=task.content, task_id=task.slug)
     session.add(description)
+    session.commit()
+    session.refresh(description)
+    description.task.updated_at = datetime.now(timezone.utc)
     session.commit()
 
 
@@ -233,7 +251,11 @@ async def update_description(description: AddDescription, session: SessionDep):
     # TODO: add slug to description potentially?
     found_des = session.get_one(TaskDescription, int(description.slug))
     found_des.message = description.content
+    found_des.updated_at = datetime.now(timezone.utc)
     session.add(found_des)
+    session.commit()
+    session.refresh(found_des)
+    found_des.task.updated_at = datetime.now(timezone.utc)
     session.commit()
 
 
@@ -255,5 +277,7 @@ async def change_mailing(mail_task: Mailibility, session: SessionDep):
         case "description":
             stmt = select(TaskDescription).where(TaskDescription.id == mail_task.slug)
     found_item = session.exec(stmt).one()
+    found_item.mailable = mail_task.flag
+    session.add(found_item)
     ic(found_item)
-    # session.commit()
+    session.commit()

@@ -5,28 +5,42 @@
   import { metadata } from "../lib/helpers";
   import { SvelteURL } from "svelte/reactivity";
   type Data = {};
+  type StatusOptions = "completed" | "progressing" | "queued" | "blocked";
   const {
     rows,
     url,
     total,
   }: {
     rows: {
-      status: "completed" | "progressing" | "queued" | "blocked";
+      status: StatusOptions;
       title: string;
       date: string;
+      mailable: boolean;
       slug: string;
-      details: { message: string; date: string; slug: string }[];
+      details: {
+        message: string;
+        date: string;
+        slug: string;
+        mailable: boolean;
+      }[];
     }[];
     url: string;
     total: number;
   } = $props();
   let searchText = $state("");
   let timer = $state(-1);
-  let currentTask = $state(rows[0].slug);
+  let currentTask = $state("");
   const location = new SvelteURL(window.location.href);
   const currentDays = location.searchParams.get("days") ?? "";
   const currentPage = location.searchParams.get("page") ?? "";
   const currPerPage = location.searchParams.get("perpage") ?? "";
+  let currentStatus: StatusOptions | "" = $state("");
+  const statusOptions: StatusOptions[] = [
+    "queued",
+    "progressing",
+    "completed",
+    "blocked",
+  ];
   const createNewLink = (
     days: string | null = null,
     page: number | null = null,
@@ -56,9 +70,19 @@
       router.reload();
     },
   });
+  const deleteDescription = createMutation({
+    mutationKey: ["des-delete"],
+    mutationFn: (deleteInfo: { slug: string }) =>
+      ky
+        .delete<Data>("/delete-description", { json: { ...deleteInfo } })
+        .json(),
+    onSuccess: () => {
+      router.reload();
+    },
+  });
 </script>
 
-{#snippet mailIconLight()}
+{#snippet mailIcon()}
   <svg
     fill="currentColor"
     stroke-width="0"
@@ -84,21 +108,6 @@
     width="1em"
     ><path
       d="m170.5 51.6-19 28.4h145l-19-28.4c-1.5-2.2-4-3.6-6.7-3.6h-93.7c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6 36.7 55H424c13.3 0 24 10.7 24 24s-10.7 24-24 24h-8v304c0 44.2-35.8 80-80 80H112c-44.2 0-80-35.8-80-80V128h-8c-13.3 0-24-10.7-24-24s10.7-24 24-24h69.8l36.7-55.1C140.9 9.4 158.4 0 177.1 0h93.7c18.7 0 36.2 9.4 46.6 24.9zM80 128v304c0 17.7 14.3 32 32 32h224c17.7 0 32-14.3 32-32V128H80zm80 64v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16z"
-    ></path></svg
-  >
-{/snippet}
-
-{#snippet mailIconDark()}
-  <svg
-    fill="currentColor"
-    stroke-width="0"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 1024 1024"
-    style="overflow: visible; color: currentcolor;"
-    height="1em"
-    width="1em"
-    ><path
-      d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-80.8 108.9L531.7 514.4c-7.8 6.1-18.7 6.1-26.5 0L189.6 268.9A7.2 7.2 0 0 1 194 256h648.8a7.2 7.2 0 0 1 4.4 12.9z"
     ></path></svg
   >
 {/snippet}
@@ -166,7 +175,6 @@
         oninput={(e) => {
           if (timer !== -1) {
             clearTimeout(timer);
-            console.log("cleared");
           }
           timer = setTimeout(() => {
             searchText = (e.target as HTMLInputElement).value;
@@ -175,8 +183,8 @@
       />
       <select
         class="h-12 bg-slate-800 p-2 text-center text-lg font-extrabold text-slate-100"
-        name=""
-        id=""
+        name="days-range"
+        id="days-selector"
         onchange={(e) =>
           (window.location.href = createNewLink(e.currentTarget.value))}
       >
@@ -187,8 +195,8 @@
       </select>
       <select
         class="h-12 bg-slate-800 p-2 text-center text-lg font-extrabold text-slate-100"
-        name=""
-        id=""
+        name="per-page"
+        id="per-page-selector"
         onchange={(e) =>
           (window.location.href = createNewLink(
             null,
@@ -202,13 +210,26 @@
           >
         {/each}
       </select>
+      <select
+        class="h-12 bg-slate-800 p-2 text-center text-lg font-extrabold text-slate-100"
+        name=""
+        id=""
+        bind:value={currentStatus}
+      >
+        <option value="">Filter Status</option>
+        {#each statusOptions as val}
+          <option selected={val === currentStatus} value={val}
+            >{metadata[val].title}</option
+          >
+        {/each}
+      </select>
     </form>
   </section>
   <section class="flex flex-col items-center justify-center gap-y-3 p-3">
     {#each rows as row}
-      {#if searchText === "" || row.title
-          .toLowerCase()
-          .includes(searchText.toLowerCase())}
+      {#if (currentStatus === "" || row.status === currentStatus) && (searchText === "" || row.title
+            .toLowerCase()
+            .includes(searchText.toLowerCase()))}
         <section
           class="flex h-24 w-full flex-col rounded-lg border-2 border-blue-100 bg-slate-100 p-2.5 text-lg text-slate-950"
         >
@@ -228,10 +249,11 @@
                     kind: "task",
                     flag: e.currentTarget.checked,
                   })}
+                checked={row.mailable}
                 name="task-mailable"
                 type="checkbox"
               />
-              <span>{@render mailIconDark()}</span>
+              <span>{@render mailIcon()}</span>
               {#if currentTask !== row.slug}
                 <button onclick={() => (currentTask = row.slug)}
                   >{@render downArrow()}</button
@@ -260,11 +282,16 @@
                         kind: "description",
                         flag: e.currentTarget.checked,
                       })}
+                    checked={detail.mailable}
                     name="description-mailable"
                     type="checkbox"
                   />
-                  <span class="">{@render mailIconLight()}</span>
-                  <span class="cursor-pointer">{@render trash()}</span>
+                  <span class="">{@render mailIcon()}</span>
+                  <button
+                    onclick={() =>
+                      $deleteDescription.mutate({ slug: detail.slug })}
+                    >{@render trash()}</button
+                  >
                 </div>
               </div>
             {/each}

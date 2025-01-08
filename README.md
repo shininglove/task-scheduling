@@ -4,13 +4,13 @@ Cleanup:
 - try out cuid2
 
 Deleteable:
-- descriptions
+- ~descriptions~
 - ~tasks from task page~
 - soft deletes?
 
 Update:
-- add updated_at column
-- should mail or not field
+- ~add updated_at column~
+- ~should mail or not field~
 
 Editable:
 - ~(potentially) name from task page~
@@ -28,7 +28,7 @@ Send Function:
 
 Features:
 - ~Add a blocked state~
+- Filter homepage for queued and working
 
 Testing:
-- Adding faker seed script
 - ~migrations script for these db updates~

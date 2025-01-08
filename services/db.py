@@ -29,4 +29,4 @@ class TaskDescription(SQLModel, table=True):
     updated_at: datetime = Field(default=datetime.now(timezone.utc))
     deleted_at: datetime | None = Field(default=None, nullable=True)
     mailable: bool = Field(default=True)
-    task: TaskItem | None = Relationship(back_populates="descriptions")
+    task: TaskItem = Relationship(back_populates="descriptions")
