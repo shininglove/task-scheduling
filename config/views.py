@@ -11,7 +11,7 @@ MAIL_DIR = TEMPLATES_DIR / "mail" / "emails"
 MAIL_TEMPLATE = MAIL_DIR / "report.html"
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
-manifest_json = Path("views") / "src"
+manifest_json = Path("static") / "manifest.json"
 
 inertia_config = InertiaConfig(
     templates=templates,
@@ -27,4 +27,6 @@ inertia_dependency = inertia_dependency_factory(inertia_config)
 
 InertiaDependency = Annotated[Inertia, Depends(inertia_dependency)]
 
-views_dir = Path(".") / "views"
+views_dir = Path("views")
+static_dir = Path("static")
+public_dir = Path("public") 

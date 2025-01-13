@@ -9,7 +9,7 @@ from inertia import (
     inertia_request_validation_exception_handler,
 )
 from config.database import create_db_and_tables
-from config.views import views_dir
+from config.views import static_dir
 
 app_key = "3eef539b6e0bb1ec1539bd91f4b101f9"
 
@@ -36,4 +36,4 @@ app.add_exception_handler(
     inertia_request_validation_exception_handler,  # type: ignore[arg-type]
 )
 
-app.mount("/static", StaticFiles(directory=views_dir), name=f"{views_dir}")
+app.mount("/static", StaticFiles(directory=static_dir), name=f"static")

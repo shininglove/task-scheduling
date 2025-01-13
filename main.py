@@ -1,15 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Literal, Sequence
 from fastapi import HTTPException, Path, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from inertia import InertiaResponse
 from pydantic import BaseModel, Field
 from sqlmodel import func, select
-from nanoid import generate
 from icecream import ic
 import arrow
 from config.database import SessionDep
-from config.views import InertiaDependency, MAIL_TEMPLATE
+from config.views import InertiaDependency, MAIL_TEMPLATE, public_dir
 from config.app import app
 from config.settings import DAYS_STALE
 from services.db import TaskDescription, TaskItem
@@ -62,13 +61,23 @@ def upgrade_status(status: Status) -> Status:
     return statuses[idx]
 
 
+def format_status(status: Status) -> str:
+    lookup = {
+        "queued": "Queued",
+        "progressing": "In-Progress",
+        "completed": "Completed",
+        "blocked": "Blocked",
+    }
+    return lookup[status]
+
+
 def process_tasks(
     items: Sequence[TaskItem], time_limit: datetime, placeholder: str = ""
 ) -> str:
     html = ""
     for item in items:
         if item.mailable:
-            header = f"<span><b>{item.title}</b> [{item.status.title()}]</span>"
+            header = f"<span><b>{item.title}</b> [{format_status(item.status)}]</span>"
             details = []
             for d in item.descriptions:
                 if d.updated_at > time_limit and d.mailable:
@@ -90,10 +99,16 @@ async def index(inertia: InertiaDependency, session: SessionDep) -> InertiaRespo
             "name": t.title,
             "slug": t.slug,
             "date": arrow.get(t.date_created).humanize(),
+            "fulldate": arrow.get(t.date_created).format("MM-DD-YYYY")
         }
         for t in saved_tasks
     ]
     return await inertia.render("Index", {"data": tasks})
+
+
+@app.get("/favicon.ico")
+async def favicon() -> FileResponse:
+    return FileResponse(public_dir / "favicon.ico")
 
 
 @app.get("/settings", response_model=None)
@@ -138,6 +153,7 @@ async def task_page(
             "id": f"{d.id or ""}",
             "content": d.message,
             "date": arrow.get(d.date_created).humanize(),
+            "fulldate": arrow.get(d.date_created).format("MM-DD-YYYY")
         }
         for d in task.descriptions
     ]
@@ -177,12 +193,14 @@ async def task_list(
             "slug": t.slug,
             "status": t.status,
             "mailable": t.mailable,
-            "date": arrow.get(t.date_created).format("MM-DD-YYYY"),
+            "date": arrow.get(t.date_created).humanize(),
+            "fulldate": arrow.get(t.date_created).format("MM-DD-YYYY"),
             "details": [
                 {
                     "message": d.message[:message_size]
                     + ("" if len(d.message) < message_size else "..."),
-                    "date": arrow.get(d.date_created).format("MM-DD-YYYY"),
+                    "date": arrow.get(d.date_created).humanize(),
+                    "fulldate": arrow.get(d.date_created).format("MM-DD-YYYY"),
                     "slug": f"{d.id}",
                     "mailable": d.mailable,
                 }
@@ -210,7 +228,7 @@ async def send_report(session: SessionDep):
 async def create_task(tasks: CreateTask, session: SessionDep):
     # NOTE: need to sub out "'" because it breaks inertia
     ic(tasks)
-    task = TaskItem(title=tasks.name.replace("'", "’"), slug=generate())
+    task = TaskItem(title=tasks.name.replace("'", "’"))
     description = TaskDescription(
         message=tasks.message.replace("'", "’"), task_id=task.slug
     )

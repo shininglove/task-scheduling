@@ -33,5 +33,5 @@ Features:
 Testing:
 - ~migrations script for these db updates~
 v2 plans:
-- tooltip with date
-- delete prompt with confirmation
+- ~tooltip with date~
+- ~delete prompt with confirmation~

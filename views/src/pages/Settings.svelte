@@ -5,7 +5,9 @@
   const query = createMutation({
     mutationKey: ["task-create"],
     mutationFn: () => ky.post<Data>("/send-report").json(),
+    onSuccess: () => modal.close(),
   });
+  let modal: HTMLDialogElement;
 </script>
 
 {#snippet sendIcon()}
@@ -38,14 +40,47 @@
   >
 {/snippet}
 
+{#snippet loading()}
+  {#if $query.isPending}
+    <span class="loading loading-spinner loading-sm"></span>
+  {/if}
+{/snippet}
+
+{#snippet dialog()}
+  <dialog bind:this={modal} class="modal">
+    <div class="modal-box text-neutral-50">
+      <h3 class="text-2xl font-bold">Send Report</h3>
+      <p class="py-4">Confirm if you want to send the report now?</p>
+      <div class="modal-action">
+        <form method="dialog">
+          <button
+            onclick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              $query.mutate();
+            }}
+            class={`btn text-base-300 ${$query.isPending ? "bg-info" : "bg-neutral-50"}  text-xl font-extrabold hover:text-white`}
+            >{@render loading()}Send</button
+          >
+          <button class="btn bg-primary text-xl">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+{/snippet}
+
+<svelte:head>
+  <title>Task Tracking | Settings</title>
+</svelte:head>
 <section class="grid grid-cols-3 p-20 text-slate-700">
   <button
-    onclick={() => $query.mutate()}
+    onclick={() => modal.showModal()}
     class="flex h-72 w-72 flex-col items-center justify-center gap-y-10 border-2 border-slate-950 bg-slate-100 text-center text-7xl"
   >
     {@render sendIcon()}
     <span class="text-2xl">Send Report</span>
   </button>
+  {@render dialog()}
   <section class="w-fit">
     <a class="" href={`/mail-preview`}>
       <div

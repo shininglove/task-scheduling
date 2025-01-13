@@ -18,6 +18,7 @@
       id: string;
       content: string;
       date: string;
+      fulldate: string;
     }[];
   } = $props();
   let content: string = $state("");
@@ -183,7 +184,7 @@
           >
         {/if}
       </div>
-      <div class="ml-auto font-bold text-red-500">
+      <div class="ml-auto font-bold text-red-500 tooltip cursor-context-menu" data-tip={item.fulldate}>
         {item.date}
       </div>
     </section>

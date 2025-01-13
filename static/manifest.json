@@ -1,8 +1,8 @@
 {
-  "main.js": {
+  "src/main.js": {
     "file": "main.js",
     "name": "main",
-    "src": "main.js",
+    "src": "src/main.js",
     "isEntry": true,
     "css": [
       "main.css"

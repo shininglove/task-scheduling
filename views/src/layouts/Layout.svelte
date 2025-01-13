@@ -36,7 +36,7 @@
 {/snippet}
 
 {#snippet navbar()}
-    <header class="bg-slate-900 px-4 py-7">
+    <header class="bg-base-300 px-4 py-7">
         <div
             class="font-sans text-5xl font-bold text-slate-50 flex items-center"
         >
@@ -50,7 +50,7 @@
 {/snippet}
 
 <QueryClientProvider client={queryClient}>
-    <main class="h-screen w-screen overflow-x-hidden bg-slate-700">
+    <main class="h-screen w-screen overflow-x-hidden bg-base-100">
         {@render navbar()}
         <section id="content" class="h-full text-slate-50">
             {@render children()}

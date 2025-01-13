@@ -13,10 +13,12 @@
       name: string;
       slug: string;
       date: string;
+      fulldate: string;
     }[];
   } = $props();
   let createdTask: string = $state("");
   let taskDescription: string = $state("");
+  let statusToShow: string = $state("queued,progressing");
   const query = createMutation({
     mutationKey: ["task-create"],
     mutationFn: (createInfo: { name: string; message: string }) =>
@@ -41,7 +43,6 @@
       router.reload();
     },
   });
-  let statusToShow: string = $state("queued,progressing");
 </script>
 
 {#snippet trash()}
@@ -74,14 +75,14 @@
         <label class="text-2xl font-semibold" for="new-task">New Task</label>
         <input
           placeholder="Write task name here"
-          class="h-16 w-3/5 rounded px-4 text-3xl text-slate-700 lg:w-2/5"
+          class="h-16 w-3/5 rounded px-4 text-3xl text-neutral-content lg:w-2/5"
           name="task-name"
           type="text"
           bind:value={createdTask}
           required={true}
         />
         <textarea
-          class="h-48 w-3/5 resize-none rounded p-4 text-3xl text-slate-700 md:w-11/12 lg:w-4/5"
+          class="h-48 w-3/5 resize-none rounded p-4 text-3xl text-neutral-content md:w-11/12 lg:w-4/5"
           name="description"
           id="create-description"
           placeholder="Add task description here..."
@@ -102,7 +103,7 @@
   </section>
   <section class="px-6">
     <select
-      class="h-12 w-56 bg-slate-900 text-center text-xl font-bold text-slate-100"
+      class="h-12 w-56 bg-base-300 text-center text-xl font-bold text-neutral-content"
       bind:value={statusToShow}
       name=""
       id=""
@@ -119,10 +120,10 @@
     id="current-tasks"
     class="grid grid-cols-1 gap-y-5 p-5 text-3xl md:grid-cols-2 lg:grid-cols-3"
   >
-    {#each data as { name, status, date, slug }}
+    {#each data as { name, status, date, slug, fulldate}}
       {#if statusToShow.includes(status) || statusToShow === ""}
         <div
-          class="min-w-96 flex w-11/12 flex-col gap-y-5 border-4 border-slate-950 bg-slate-200 p-4 text-slate-950"
+          class="min-w-96 flex w-11/12 flex-col gap-y-5 border-4 border-slate-950 bg-base-content p-4 text-slate-950"
         >
           <div class="flex flex-row items-center gap-x-5">
             <button
@@ -143,7 +144,7 @@
             </button>
           </div>
           <span class="mt-auto p-2 text-xl"
-            >Last updated: <span class="font-semibold text-red-500">{date}</span
+            >Last updated: <span class="font-semibold text-red-500 tooltip cursor-context-menu" data-tip={fulldate}>{date}</span
             >
           </span>
         </div>

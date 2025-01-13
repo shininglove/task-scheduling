@@ -15,11 +15,13 @@
       status: StatusOptions;
       title: string;
       date: string;
+      fulldate: string;
       mailable: boolean;
       slug: string;
       details: {
         message: string;
         date: string;
+        fulldate: string;
         slug: string;
         mailable: boolean;
       }[];
@@ -169,7 +171,7 @@
         >{@render magnifying()}</span
       >
       <input
-        class="h-12 w-1/2 pl-2 text-xl text-slate-950 focus:rounded-bl focus:rounded-tl"
+        class="h-12 w-1/2 pl-2 text-xl text-slate-950 focus:rounded-bl focus:rounded-tl bg-neutral-50"
         type="text"
         placeholder="Filter down which tasks"
         oninput={(e) => {
@@ -265,15 +267,15 @@
               {/if}
             </div>
           </div>
-          <div class="pl-1 font-semibold text-red-500">
-            {row.date}
+          <div class="pl-1 font-semibold text-red-500" >
+            <span data-tip={row.fulldate} class="tooltip cursor-context-menu">{row.date}</span>
           </div>
         </section>
         {#if currentTask === row.slug}
           <section class="w-full bg-slate-800">
             {#each row.details as detail}
               <div class="flex flex-row px-3 py-2">
-                <p>{detail.message} ({detail.date})</p>
+                <p>{detail.message} (<span class="tooltip cursor-context-menu" data-tip={detail.fulldate}>{detail.date}</span>)</p>
                 <div class="ml-auto flex gap-x-5 px-2 text-2xl">
                   <input
                     onchange={(e) =>
