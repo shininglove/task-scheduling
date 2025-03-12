@@ -220,17 +220,16 @@ async def task_list(
 
 
 @app.post("/send-report", response_model=None)
-async def send_report(session: SessionDep):
+async def send_report():
     mail_report()
 
 
 @app.post("/create-task", response_model=None)
 async def create_task(tasks: CreateTask, session: SessionDep):
-    # NOTE: need to sub out "'" because it breaks inertia
     ic(tasks)
-    task = TaskItem(title=tasks.name.replace("'", "’"))
+    task = TaskItem(title=tasks.name)
     description = TaskDescription(
-        message=tasks.message.replace("'", "’"), task_id=task.slug
+        message=tasks.message, task_id=task.slug
     )
     session.add(task)
     session.add(description)
@@ -271,7 +270,7 @@ async def delete_description(task: SlugTask, session: SessionDep):
 @app.post("/create-description", response_model=None)
 async def create_description(task: AddDescription, session: SessionDep):
     description = TaskDescription(
-        message=task.content.replace("'", "’"), task_id=task.slug
+        message=task.content, task_id=task.slug
     )
     session.add(description)
     session.commit()
@@ -284,7 +283,7 @@ async def create_description(task: AddDescription, session: SessionDep):
 async def update_description(description: AddDescription, session: SessionDep):
     # TODO: add slug to description potentially?
     found_des = session.get_one(TaskDescription, int(description.slug))
-    found_des.message = description.content.replace("'", "’")
+    found_des.message = description.content
     found_des.updated_at = datetime.now(timezone.utc)
     session.add(found_des)
     session.commit()
@@ -297,7 +296,7 @@ async def update_description(description: AddDescription, session: SessionDep):
 async def change_task_title(task: TitleTask, session: SessionDep):
     found_task = session.exec(select(TaskItem).where(TaskItem.slug == task.slug)).one()
     ic(found_task)
-    found_task.title = task.title.replace("'", "’")
+    found_task.title = task.title
     session.add(found_task)
     session.commit()
 

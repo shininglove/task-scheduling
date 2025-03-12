@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [[package]]
@@ -98,7 +99,7 @@ name = "click"
 version = "8.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/96/d3/f04c7bfcf5c1862a2a5b845c6b2b360488cf47af55dfa79c98f6a6bf98b5/click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de", size = 336121 }
 wheels = [
@@ -190,15 +191,15 @@ standard = [
 
 [[package]]
 name = "fastapi-inertia"
-version = "1.0.3"
+version = "1.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
     { name = "jinja2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/dc/2b25b842899f0d86b45ffe9b86f0efc2c1a99049966a77b56a9cf7513391/fastapi_inertia-1.0.3.tar.gz", hash = "sha256:d5f3a6ef579b8f0ff431dc5da367d4479f534bc7a8ac7201d958b60ee4b7fba0", size = 16156 }
+sdist = { url = "https://files.pythonhosted.org/packages/14/3e/47277e42fe93d9004dce80da2c51ae36368a705c73b85609fb6a0651e44a/fastapi_inertia-1.0.4.tar.gz", hash = "sha256:4db189acc22773ed001ae2e1719ef851c02b76d4c61f5ae6369764dd338a81b8", size = 15849 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/9a/54151293ec7f1cbf8fc1b89d9ce3beb48195dadc2091aa8b5bea3dc5d0b8/fastapi_inertia-1.0.3-py3-none-any.whl", hash = "sha256:784dc07b79dddf586a6d17e82459e5224cc20f80075994c9aed1c9c212fb3650", size = 14241 },
+    { url = "https://files.pythonhosted.org/packages/db/1d/392b66b69e4f09b3de4b13fd803d03396d36295d649e2670bfcd253d6fab/fastapi_inertia-1.0.4-py3-none-any.whl", hash = "sha256:6107bdaccc850c272e99856de4b5bce0f8c08ccd56bbb85b36d9f3cf6d18e520", size = 14275 },
 ]
 
 [[package]]
@@ -782,7 +783,7 @@ requires-dist = [
     { name = "arrow", specifier = ">=1.3.0" },
     { name = "black", specifier = ">=24.10.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.6" },
-    { name = "fastapi-inertia", specifier = ">=1.0.3" },
+    { name = "fastapi-inertia", specifier = ">=1.0.4" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "icecream", specifier = ">=2.1.3" },
     { name = "itsdangerous", specifier = ">=2.2.0" },
